@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sqlite3/sqlite3.dart';
 import '../../core/utils/byte_formatter.dart';
+import '../../core/utils/sql_readonly_guard.dart';
 import '../models/db_table.dart';
 import '../models/query_result.dart';
 import 'sqlite_service.dart';
@@ -37,7 +38,8 @@ class _ExportTableRequest {
 }
 
 Future<void> _exportTableWorker(_ExportTableRequest req) async {
-  final db = sqlite3.open(req.dbPath, mode: OpenMode.readOnly);
+  final uri = SqlReadonlyGuard.toImmutableUri(req.dbPath);
+  final db = sqlite3.open(uri, mode: OpenMode.readOnly, uri: true);
   final file = File(req.outPath);
   final sink = file.openWrite(encoding: utf8);
 
@@ -114,7 +116,8 @@ String _sanitizeZipEntryName(String originalName, Set<String> usedNames) {
 }
 
 Future<void> _exportAllTablesWorker(_ExportAllRequest req) async {
-  final db = sqlite3.open(req.dbPath, mode: OpenMode.readOnly);
+  final uri = SqlReadonlyGuard.toImmutableUri(req.dbPath);
+  final db = sqlite3.open(uri, mode: OpenMode.readOnly, uri: true);
   final encoder = ZipFileEncoder();
   encoder.create(req.outPath);
   final usedNames = <String>{};

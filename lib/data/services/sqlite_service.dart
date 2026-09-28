@@ -34,7 +34,8 @@ class TableDataFetchRequest {
 
 /// Top-level function — safe to call inside [compute] / [Isolate.run].
 QueryResult fetchTableDataInIsolate(TableDataFetchRequest req) {
-  final db = sqlite3.open(req.filePath, mode: OpenMode.readOnly);
+  final uri = SqlReadonlyGuard.toImmutableUri(req.filePath);
+  final db = sqlite3.open(uri, mode: OpenMode.readOnly, uri: true);
   final stopwatch = Stopwatch()..start();
   try {
     final escapedTable = req.tableName.replaceAll('"', '""');
@@ -113,7 +114,8 @@ QueryResult fetchTableDataInIsolate(TableDataFetchRequest req) {
 /// Top-level function — safe to call inside [Isolate.run] because it opens
 /// its own DB handle rather than sharing the main-thread handle.
 List<DbTable> fetchTablesMetadataInIsolate(String filePath) {
-  final db = sqlite3.open(filePath, mode: OpenMode.readOnly);
+  final uri = SqlReadonlyGuard.toImmutableUri(filePath);
+  final db = sqlite3.open(uri, mode: OpenMode.readOnly, uri: true);
   try {
     const query = '''
       SELECT name, type, sql
@@ -189,7 +191,8 @@ class SqliteService {
 
   void open(String filePath) {
     close();
-    _db = sqlite3.open(filePath, mode: OpenMode.readOnly);
+    final uri = SqlReadonlyGuard.toImmutableUri(filePath);
+    _db = sqlite3.open(uri, mode: OpenMode.readOnly, uri: true);
     _currentFilePath = filePath;
   }
 

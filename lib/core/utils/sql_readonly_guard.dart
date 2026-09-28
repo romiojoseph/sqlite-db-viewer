@@ -470,4 +470,16 @@ class SqlReadonlyGuard {
     final match = RegExp(r'^[a-zA-Z_]+').firstMatch(trimmed);
     return match?.group(0) ?? '';
   }
+
+  /// Converts a standard file path into an immutable SQLite URI string.
+  /// This instructs SQLite to treat the file as read-only physical media (like a CD-ROM),
+  /// completely preventing creation of `-shm`/`-wal` files or updating file timestamps.
+  static String toImmutableUri(String filePath) {
+    var normalized = filePath.replaceAll(r'\', '/');
+    if (!normalized.startsWith('/')) {
+      normalized = '/$normalized';
+    }
+    final encoded = Uri.encodeFull(normalized);
+    return 'file:$encoded?immutable=1&mode=ro';
+  }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:sqlite3/sqlite3.dart';
+import '../../../core/utils/sql_readonly_guard.dart';
 import '../../../data/models/db_table.dart';
 import '../../../data/services/sqlite_service.dart';
 import '../models/search_match.dart';
@@ -22,7 +23,8 @@ class _SearchWorkerRequest {
 }
 
 SearchResult _searchWorker(_SearchWorkerRequest request) {
-  final db = sqlite3.open(request.dbPath, mode: OpenMode.readOnly);
+  final uri = SqlReadonlyGuard.toImmutableUri(request.dbPath);
+  final db = sqlite3.open(uri, mode: OpenMode.readOnly, uri: true);
   final stopwatch = Stopwatch()..start();
   final matches = <SearchMatch>[];
   var isCapped = false;
