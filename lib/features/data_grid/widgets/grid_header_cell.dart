@@ -70,11 +70,27 @@ class _GridHeaderCellState extends State<GridHeaderCell> {
         AppMenuItem<String>(
           value: 'sort_asc',
           label: 'Order by ${widget.columnName} ASC',
+          customIcon: const Padding(
+            padding: EdgeInsets.only(right: AppSpacing.sm),
+            child: AppSvgIcon(
+              AppIcons.sortAscendingBold,
+              size: 14,
+              color: AppColors.neutral9,
+            ),
+          ),
         ),
         // Sort Descending
         AppMenuItem<String>(
           value: 'sort_desc',
           label: 'Order by ${widget.columnName} DESC',
+          customIcon: const Padding(
+            padding: EdgeInsets.only(right: AppSpacing.sm),
+            child: AppSvgIcon(
+              AppIcons.sortDescendingBold,
+              size: 14,
+              color: AppColors.neutral9,
+            ),
+          ),
         ),
         if (widget.isSorted)
           const AppMenuItem<String>(
@@ -272,8 +288,8 @@ class _GridHeaderCellState extends State<GridHeaderCell> {
                           const SizedBox(width: AppSpacing.xxxs),
                           AppSvgIcon(
                             widget.sortAscending
-                                ? AppIcons.caretUp
-                                : AppIcons.caretDown,
+                                ? AppIcons.sortAscendingBold
+                                : AppIcons.sortDescendingBold,
                             size: 13,
                             color: AppColors.neutral12,
                           ),

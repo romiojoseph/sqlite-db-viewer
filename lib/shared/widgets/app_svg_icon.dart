@@ -27,6 +27,7 @@ class AppIcons {
   static const String table = '$_basePath/table-duotone.svg';
   static const String tableFill = '$_basePath/table-fill.svg';
   static const String fileSql = '$_basePath/file-sql-duotone.svg';
+  static const String bracketsCurly = '$_basePath/brackets-curly-duotone.svg';
   static const String terminalWindow = '$_basePath/terminal-window-duotone.svg';
   static const String graph = '$_basePath/graph-duotone.svg';
   static const String treeStructure = '$_basePath/tree-structure-duotone.svg';
@@ -51,10 +52,15 @@ class AppIcons {
   static const String pencil = '$_basePath/pencil-duotone.svg';
   static const String play = '$_basePath/play-fill.svg';
   static const String plus = '$_basePath/plus-bold.svg';
+  static const String check = '$_basePath/check-bold.svg';
   static const String checkCircle = '$_basePath/check-circle-fill.svg';
   static const String plusCircle = '$_basePath/plus-circle-duotone.svg';
   static const String splitHorizontal =
       '$_basePath/split-horizontal-duotone.svg';
+  static const String squareBold = '$_basePath/square-bold.svg';
+  static const String sortAscendingBold = '$_basePath/sort-ascending-bold.svg';
+  static const String sortDescendingBold =
+      '$_basePath/sort-descending-bold.svg';
   static const String x = '$_basePath/x-bold.svg';
 }
 

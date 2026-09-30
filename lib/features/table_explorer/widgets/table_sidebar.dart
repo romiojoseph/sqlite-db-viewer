@@ -3,6 +3,7 @@ import '../../../data/models/db_index.dart';
 import '../../../data/models/db_sequence.dart';
 import '../../../data/models/db_table.dart';
 import '../../../data/models/db_trigger.dart';
+import '../../../shared/widgets/app_menu.dart';
 import '../../../shared/widgets/app_svg_icon.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_spacing.dart';
@@ -22,6 +23,7 @@ class TableSidebar extends StatefulWidget {
   final String? selectedTableName;
   final ValueChanged<DbTable> onTableSelected;
   final VoidCallback? onImportCsv;
+  final VoidCallback? onImportJson;
   final VoidCallback? onOpenCompleteSchema;
   final VoidCallback onCloseDatabase;
   final VoidCallback onNewQueryTab;
@@ -40,6 +42,7 @@ class TableSidebar extends StatefulWidget {
     required this.selectedTableName,
     required this.onTableSelected,
     this.onImportCsv,
+    this.onImportJson,
     this.onOpenCompleteSchema,
     required this.onCloseDatabase,
     required this.onNewQueryTab,
@@ -75,6 +78,50 @@ class _TableSidebarState extends State<TableSidebar> {
     _searchController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _openImportMenu(BuildContext targetContext) {
+    final renderBox = targetContext.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+    final position = renderBox.localToGlobal(
+      Offset(renderBox.size.width + 4.0, 0),
+    );
+
+    showAppMenu<String>(
+      context: context,
+      position: position,
+      minWidth: 190,
+      items: [
+        if (widget.onImportCsv != null)
+          AppMenuItem<String>(
+            value: 'csv',
+            label: 'Import CSV File',
+            customIcon: const Padding(
+              padding: EdgeInsets.only(right: AppSpacing.sm),
+              child: AppSvgIcon(
+                AppIcons.table,
+                size: 16,
+                color: AppColors.neutral8,
+              ),
+            ),
+            onTap: widget.onImportCsv,
+          ),
+        if (widget.onImportJson != null)
+          AppMenuItem<String>(
+            value: 'json',
+            label: 'Import JSON File',
+            customIcon: const Padding(
+              padding: EdgeInsets.only(right: AppSpacing.sm),
+              child: AppSvgIcon(
+                AppIcons.bracketsCurly,
+                size: 16,
+                color: AppColors.neutral8,
+              ),
+            ),
+            onTap: widget.onImportJson,
+          ),
+      ],
+    );
   }
 
   void _onActivityItemTapped(SidebarActiveSection section) {
@@ -215,13 +262,16 @@ class _TableSidebarState extends State<TableSidebar> {
                 onTap: widget.onNewQueryTab,
               ),
               const SizedBox(height: AppSpacing.xxs),
-              // Import CSV
-              if (widget.onImportCsv != null) ...[
-                _ActivityBarIcon(
-                  svgIcon: AppIcons.arrowSquareUp,
-                  tooltip: 'Import CSV to Table',
-                  isActive: false,
-                  onTap: widget.onImportCsv!,
+              // Import (CSV / JSON)
+              if (widget.onImportCsv != null ||
+                  widget.onImportJson != null) ...[
+                Builder(
+                  builder: (ctx) => _ActivityBarIcon(
+                    svgIcon: AppIcons.plus,
+                    tooltip: 'Import Table (CSV / JSON)',
+                    isActive: false,
+                    onTap: () => _openImportMenu(ctx),
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.xxs),
               ],
@@ -298,27 +348,33 @@ class _TableSidebarState extends State<TableSidebar> {
                             title: 'Tables',
                             count: filteredTables.length,
                             isExpanded: isTablesOpen,
-                            trailingAction: widget.onImportCsv != null
-                                ? Tooltip(
-                                    message: 'Import CSV as Table',
-                                    child: InkWell(
-                                      onTap: widget.onImportCsv,
-                                      borderRadius: BorderRadius.circular(4.0),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: AppSpacing.xxs,
-                                          vertical: AppSpacing.xxxs,
+                            trailingAction:
+                                (widget.onImportCsv != null ||
+                                    widget.onImportJson != null)
+                                ? Builder(
+                                    builder: (ctx) => Tooltip(
+                                      message: 'Import Table (CSV / JSON)',
+                                      child: InkWell(
+                                        onTap: () => _openImportMenu(ctx),
+                                        borderRadius: BorderRadius.circular(
+                                          4.0,
                                         ),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.neutral4,
-                                          borderRadius: BorderRadius.circular(
-                                            4.0,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: AppSpacing.xxs,
+                                            vertical: AppSpacing.xxxs,
                                           ),
-                                        ),
-                                        child: const AppSvgIcon(
-                                          AppIcons.plus,
-                                          size: 14,
-                                          color: AppColors.neutral8,
+                                          decoration: BoxDecoration(
+                                            color: AppColors.neutral4,
+                                            borderRadius: BorderRadius.circular(
+                                              4.0,
+                                            ),
+                                          ),
+                                          child: const AppSvgIcon(
+                                            AppIcons.plus,
+                                            size: 14,
+                                            color: AppColors.neutral8,
+                                          ),
                                         ),
                                       ),
                                     ),

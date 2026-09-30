@@ -11,6 +11,7 @@ import '../data/models/db_trigger.dart';
 import '../data/models/query_result.dart';
 import '../data/services/csv_export_service.dart';
 import '../data/services/csv_import_service.dart';
+import '../data/services/json_import_service.dart';
 import '../data/services/sqlite_service.dart';
 import '../features/data_grid/widgets/paginated_data_grid.dart';
 import '../features/database_info/widgets/database_info_dialog.dart';
@@ -642,6 +643,106 @@ class _DatabaseViewState extends State<DatabaseView> {
     }
   }
 
+  Future<void> _handleImportJson() async {
+    try {
+      final result = await FilePickerPlatform.instance.pickFiles(
+        dialogTitle: 'Select JSON File to Import as Table',
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+
+      if (result.isEmpty) return;
+
+      final validPaths = result
+          .map((f) => f.path)
+          .where((p) => p != null && p.isNotEmpty)
+          .cast<String>()
+          .toList();
+
+      if (validPaths.isEmpty) return;
+      if (!mounted) return;
+
+      final confirmed = await AppDialog.show<bool>(
+        context,
+        builder: (ctx) => AppDialog(
+          title: 'Confirm Database Modification',
+          maxWidth: 500,
+          maxHeight: 260,
+          contentPadding: const EdgeInsets.all(AppSpacing.md),
+          footerActions: [
+            AppButton(
+              label: 'Cancel',
+              variant: AppButtonVariant.ghost,
+              size: AppButtonSize.small,
+              onPressed: () => Navigator.of(ctx).pop(false),
+            ),
+            AppButton(
+              label: 'Proceed with Import',
+              variant: AppButtonVariant.primary,
+              size: AppButtonSize.small,
+              onPressed: () => Navigator.of(ctx).pop(true),
+            ),
+          ],
+          child: Align(
+            alignment: Alignment.topLeft,
+            child: Text(
+              'Importing JSON will write changes directly to the database file on disk:\n\n${widget.dbPath}\n\nDo you want to proceed?',
+              style: AppTypography.body.copyWith(color: AppColors.neutral10),
+            ),
+          ),
+        ),
+      );
+
+      if (confirmed != true) return;
+
+      setState(() {
+        _isLoadingTables = true;
+      });
+
+      final importedSummaries = <String>[];
+
+      for (final path in validPaths) {
+        final importRes = await JsonImportService.importJson(
+          dbPath: widget.dbPath,
+          jsonFilePath: path,
+        );
+        importedSummaries.add(
+          "'${importRes.tableName}' (${importRes.rowsImported} rows, ${importRes.isNewTable ? 'New' : 'Updated'})",
+        );
+      }
+
+      await _refreshDatabase();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Successfully imported: ${importedSummaries.join(', ')}',
+              style: AppTypography.caption.copyWith(color: AppColors.neutral12),
+            ),
+            backgroundColor: AppColors.neutral3,
+            duration: const Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingTables = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('JSON Import failed: $e'),
+            backgroundColor: AppColors.error,
+            duration: const Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final active = _activeTab;
@@ -707,6 +808,7 @@ class _DatabaseViewState extends State<DatabaseView> {
                           selectedTableName: active?.tableName,
                           onTableSelected: _openTableTab,
                           onImportCsv: _handleImportCsv,
+                          onImportJson: _handleImportJson,
                           onOpenCompleteSchema: _showCompleteSchemaDialog,
                           onCloseDatabase: widget.onCloseDatabase,
                           onNewQueryTab: () => _addNewQueryTab(),

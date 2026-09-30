@@ -6,18 +6,18 @@ A desktop application built with **Flutter** to view, inspect, and compare SQLit
 
 ## Key Features
 
-* **Table Explorer and Data Grid**: Browse tables, views, indexes, flexible column resizing, and pagination up to 500 rows.
+* **Table Explorer and Data Grid**: Browse tables, views, indexes, flexible column resizing, pagination up to 500 rows, and inspect JSON/text cell details with formatting.
 * **SQL Query Runner**: Execute custom queries in separate tabs.
 * **Schema Inspection and Graph**: Inspect table structures, columns, nullability, foreign keys, triggers, and ER (Entity-Relationship) diagrams.
 * **Database Diff Checker**: Compare two database files side by side to detect structural changes and row-level data differences.
 * **Global Search**: Search text across all tables and columns in a database at once.
-* **Import and Export**: Import CSV files into tables, export individual tables/queries to CSV, or export the entire database as a zipped bundle.
+* **Import and Export**: Import CSV and JSON files into tables, export individual tables/queries to CSV, or export the entire database as a zipped bundle.
 
 ## Supported File Types
 
 * `.db`, `.sqlite`, `.sqlite3`
 * `.sql` (plain SQL scripts open in temporary isolated environments)
-* `.csv` (for table imports)
+* `.csv`, `.json` (for table imports and data inspection)
 
 ## Getting Started
 

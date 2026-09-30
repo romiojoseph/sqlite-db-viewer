@@ -105,33 +105,22 @@ class _SchemaGraphViewState extends State<SchemaGraphView> {
             Positioned(
               top: 16,
               left: 16,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.xs,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.neutral2,
-                  borderRadius: BorderRadius.circular(6.0),
-                  border: Border.all(color: AppColors.neutral5),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const AppSvgIcon(
-                      AppIcons.info,
-                      size: 14,
-                      color: AppColors.neutral10,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const AppSvgIcon(
+                    AppIcons.info,
+                    size: 16,
+                    color: AppColors.neutral7,
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
+                  Text(
+                    'No foreign keys defined; tables shown as standalone entities.',
+                    style: AppTypography.caption.copyWith(
+                      color: AppColors.neutral8,
                     ),
-                    const SizedBox(width: AppSpacing.xs),
-                    Text(
-                      'No foreign keys defined; tables shown as standalone entities.',
-                      style: AppTypography.tagline.copyWith(
-                        color: AppColors.neutral10,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           Positioned(

@@ -211,14 +211,14 @@ class _AppMenuItemTileState<T> extends State<_AppMenuItemTile<T>> {
     final Color textColor = item.isDestructive
         ? AppColors.error
         : _isHovered
-        ? AppColors.neutral12
-        : AppColors.neutral11;
+        ? AppColors.neutral11
+        : AppColors.neutral8;
 
     final Color iconColor = item.isDestructive
         ? AppColors.error
         : _isHovered
-        ? AppColors.neutral12
-        : AppColors.neutral9;
+        ? AppColors.neutral11
+        : AppColors.neutral8;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),

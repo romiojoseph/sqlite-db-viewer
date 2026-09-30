@@ -66,6 +66,7 @@ class _PaginatedDataGridState extends State<PaginatedDataGrid> {
   final ScrollController _horizontalHeaderController = ScrollController();
   final ScrollController _horizontalBodyController = ScrollController();
   final ScrollController _verticalController = ScrollController();
+  final ScrollController _filterScrollController = ScrollController();
   final Map<String, double> _customColumnWidths = {};
 
   // Memoized — only recomputed when widget.result changes
@@ -133,6 +134,7 @@ class _PaginatedDataGridState extends State<PaginatedDataGrid> {
     _horizontalHeaderController.dispose();
     _horizontalBodyController.dispose();
     _verticalController.dispose();
+    _filterScrollController.dispose();
     super.dispose();
   }
 
@@ -364,10 +366,8 @@ class _PaginatedDataGridState extends State<PaginatedDataGrid> {
             // Active Filters Banner (if any)
             if (widget.filters.isNotEmpty)
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: 4.0,
-                ),
+                height: 42,
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                 decoration: const BoxDecoration(
                   color: AppColors.neutral2,
                   border: Border(bottom: BorderSide(color: AppColors.neutral4)),
@@ -376,42 +376,50 @@ class _PaginatedDataGridState extends State<PaginatedDataGrid> {
                   children: [
                     const AppSvgIcon(
                       AppIcons.funnelSimple,
-                      size: 14,
-                      color: AppColors.neutral10,
+                      size: 20,
+                      color: AppColors.neutral8,
                     ),
                     const SizedBox(width: AppSpacing.xs),
                     Text(
                       'Filters:',
-                      style: AppTypography.tagline.copyWith(
-                        color: AppColors.neutral10,
+                      style: AppTypography.caption.copyWith(
+                        color: AppColors.neutral8,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.xs),
+                    const SizedBox(width: AppSpacing.sm),
                     Expanded(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            for (final f in widget.filters) ...[
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  right: AppSpacing.xs,
-                                ),
-                                child: AppChip(
-                                  label: f.toDisplayString(),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: AppSpacing.xs,
-                                    vertical: AppSpacing.xxxs,
+                      child: Scrollbar(
+                        controller: _filterScrollController,
+                        thumbVisibility: true,
+                        child: SingleChildScrollView(
+                          controller: _filterScrollController,
+                          scrollDirection: Axis.horizontal,
+                          physics: const ClampingScrollPhysics(),
+                          padding: const EdgeInsets.only(bottom: 6.0),
+                          child: Row(
+                            children: [
+                              for (final f in widget.filters) ...[
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    right: AppSpacing.xs,
                                   ),
-                                  onDeleted: () => _removeFilter(f),
+                                  child: AppChip(
+                                    label: f.toDisplayString(),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: AppSpacing.xs,
+                                      vertical: AppSpacing.xxxs,
+                                    ),
+                                    onDeleted: () => _removeFilter(f),
+                                  ),
                                 ),
-                              ),
+                              ],
                             ],
-                          ],
+                          ),
                         ),
                       ),
                     ),
+                    const SizedBox(width: AppSpacing.xs),
                     AppButton(
                       label: 'Clear all',
                       variant: AppButtonVariant.text,
@@ -527,50 +535,75 @@ class _PaginatedDataGridState extends State<PaginatedDataGrid> {
 
             // Body Rows
             Expanded(
-              child: rows.isEmpty
-                  ? const EmptyState(
-                      svgIcon: AppIcons.table,
-                      title: 'No Rows Found',
-                      subtitle: 'This table or filter returned zero records.',
-                    )
-                  : Scrollbar(
-                      controller: _verticalController,
-                      thumbVisibility: true,
-                      child: Scrollbar(
-                        controller: _horizontalBodyController,
-                        thumbVisibility: true,
-                        notificationPredicate: (notif) => notif.depth == 1,
-                        child: ListView.builder(
-                          controller: _verticalController,
-                          itemCount: rows.length,
-                          itemExtent: 34.0,
-                          itemBuilder: (context, index) {
-                            final displayNum =
-                                (widget.currentPage * widget.pageSize) +
-                                index +
-                                1;
-                            return SingleChildScrollView(
-                              controller: index == 0 ? _horizontalBodyController : null,
-                              scrollDirection: Axis.horizontal,
-                              physics: const NeverScrollableScrollPhysics(),
-                              child: SizedBox(
-                                width: totalContentWidth,
-                                child: GridRow(
-                                  key: ValueKey(displayNum),
-                                  rowIndex: index,
-                                  displayNumber: displayNum,
-                                  columns: columns,
-                                  rowData: rows[index],
-                                  columnWidths: columnWidths,
-                                  numericColumns: numericColumns,
-                                  isEven: index.isEven,
+              child: Scrollbar(
+                controller: _verticalController,
+                thumbVisibility: rows.isNotEmpty,
+                child: Scrollbar(
+                  controller: _horizontalBodyController,
+                  thumbVisibility: true,
+                  notificationPredicate: (notif) => notif.depth == 1,
+                  child: SingleChildScrollView(
+                    controller: _verticalController,
+                    scrollDirection: Axis.vertical,
+                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                    physics: rows.isEmpty
+                        ? const NeverScrollableScrollPhysics()
+                        : null,
+                    child: SingleChildScrollView(
+                      controller: _horizontalBodyController,
+                      scrollDirection: Axis.horizontal,
+                      physics: const ClampingScrollPhysics(),
+                      child: SizedBox(
+                        width: totalContentWidth,
+                        child: rows.isEmpty
+                            ? SizedBox(
+                                height: (constraints.maxHeight - 120.0).clamp(
+                                  200.0,
+                                  double.infinity,
                                 ),
+                                child: const Center(
+                                  child: EmptyState(
+                                    svgIcon: AppIcons.table,
+                                    title: 'No Rows Found',
+                                    subtitle:
+                                        'This table or filter returned zero records.',
+                                  ),
+                                ),
+                              )
+                            : Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  for (
+                                    var index = 0;
+                                    index < rows.length;
+                                    index++
+                                  ) ...[
+                                    GridRow(
+                                      key: ValueKey(
+                                        (widget.currentPage * widget.pageSize) +
+                                            index +
+                                            1,
+                                      ),
+                                      rowIndex: index,
+                                      displayNumber:
+                                          (widget.currentPage *
+                                              widget.pageSize) +
+                                          index +
+                                          1,
+                                      columns: columns,
+                                      rowData: rows[index],
+                                      columnWidths: columnWidths,
+                                      numericColumns: numericColumns,
+                                      isEven: index.isEven,
+                                    ),
+                                  ],
+                                ],
                               ),
-                            );
-                          },
-                        ),
                       ),
                     ),
+                  ),
+                ),
+              ),
             ),
 
             // Pagination Controls

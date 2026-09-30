@@ -165,7 +165,7 @@ class _WindowCaptionButtonsState extends State<WindowCaptionButtons>
           },
         ),
         _WindowCaptionButton(
-          svgIcon: _isMaximized ? AppIcons.cards : AppIcons.layout,
+          svgIcon: _isMaximized ? AppIcons.cards : AppIcons.squareBold,
           iconSize: 12,
           tooltip: _isMaximized ? 'Restore' : 'Maximize',
           onTap: () async {
